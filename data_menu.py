@@ -4,7 +4,7 @@ import pandas as pd
 from decimal import Decimal
 
 # Load the data from the provided CSV file
-data_file = "goflow2_sample_output - Copy(in).csv"  # Ensure this is the correct path to your CSV
+data_file = ""  # Ensure this is the correct path to your CSV
 data = pd.read_csv(data_file)
 
 # Caterpillar color theme
