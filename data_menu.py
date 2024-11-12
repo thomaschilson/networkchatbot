@@ -4,7 +4,7 @@ import pandas as pd
 from decimal import Decimal
 
 # Load the data from the provided CSV file
-data_file = ""  # Ensure this is the correct path to your CSV
+data_file = "goflow2_sample_output - Copy(in).csv"  # Ensure this is the correct path to your CSV
 data = pd.read_csv(data_file)
 
 # Caterpillar color theme
@@ -106,15 +106,16 @@ def display_utilization_over_threshold(window, threshold_entry):
         data.loc[index, 'time_elapsed'] = float(data.iloc[index]['time_flow_end_ns']) - float(data.iloc[index]['time_flow_start_ns'] )
     data['bps'] = (data['bytes'] * 8) / (data['time_elapsed'] / 10 ** 9)
     data['util_perc'] = data['bps'] / 10**9 * 100
-    print(data['util_perc'])
-    filtered_data = data[data['util_perc'] > threshold]
+    new_data = data.groupby('src_addr', as_index=False)['util_perc'].sum()
+    print(new_data)
+    filtered_data = new_data[new_data['util_perc'] > threshold]
    # print(float(1729276399355000000) - float(1729276231969000000))
     label = tk.Label(result_window, text=f"Networks with utilization over {threshold} %:", bg=CAT_BLACK,
                      fg=CAT_YELLOW, wraplength=350)
     label.pack(pady=10)
 
     for index, row in filtered_data.iterrows():
-        network_label = tk.Label(result_window, text=f"Src Addr: {row['src_addr']} - Bytes: {row['util_perc']}",
+        network_label = tk.Label(result_window, text=f"Src Addr: {row['src_addr']} - util percentage: {row['util_perc']}",
                                  bg=CAT_BLACK, fg=CAT_YELLOW)
         network_label.pack()
 
@@ -151,8 +152,9 @@ def display_top_volume(window, volume_entry):
     result_window.title("Top Volume Networks")
     result_window.configure(bg=CAT_BLACK)
 
-    top_volumes = data.nlargest(top_n, 'bytes')[['src_addr', 'bytes']]
-
+    total_bytes = data.groupby('src_addr', as_index = False)['bytes'].sum()
+    top_volumes = total_bytes.nlargest(top_n, 'bytes')[['src_addr', 'bytes']]
+    print(top_volumes)
     label = tk.Label(result_window, text=f"Top {top_n} networks by volume (Bytes):", bg=CAT_BLACK, fg=CAT_YELLOW,
                      wraplength=350)
     label.pack(pady=10)
