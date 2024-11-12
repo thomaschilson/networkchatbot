@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
+from decimal import Decimal
 
 # Load the data from the provided CSV file
-data_file = ""  # Ensure this is the correct path to your CSV
+data_file = "goflow2_sample_output - Copy(in).csv"  # Ensure this is the correct path to your CSV
 data = pd.read_csv(data_file)
 
 # Caterpillar color theme
@@ -100,15 +101,20 @@ def display_utilization_over_threshold(window, threshold_entry):
     result_window.geometry("400x400")
     result_window.title("Networks Over Utilization Threshold")
     result_window.configure(bg=CAT_BLACK)
-
-    filtered_data = data[data['bytes'] > threshold]
-
-    label = tk.Label(result_window, text=f"Networks with utilization over {threshold} bytes:", bg=CAT_BLACK,
+    data['time_elapsed'] = 0
+    for index, row in data.iterrows():
+        data.loc[index, 'time_elapsed'] = float(data.iloc[index]['time_flow_end_ns']) - float(data.iloc[index]['time_flow_start_ns'] )
+    data['bps'] = (data['bytes'] * 8) / (data['time_elapsed'] / 10 ** 9)
+    data['util_perc'] = data['bps'] / 10**9 * 100
+    print(data['util_perc'])
+    filtered_data = data[data['util_perc'] > threshold]
+   # print(float(1729276399355000000) - float(1729276231969000000))
+    label = tk.Label(result_window, text=f"Networks with utilization over {threshold} %:", bg=CAT_BLACK,
                      fg=CAT_YELLOW, wraplength=350)
     label.pack(pady=10)
 
     for index, row in filtered_data.iterrows():
-        network_label = tk.Label(result_window, text=f"Src Addr: {row['src_addr']} - Bytes: {row['bytes']}",
+        network_label = tk.Label(result_window, text=f"Src Addr: {row['src_addr']} - Bytes: {row['util_perc']}",
                                  bg=CAT_BLACK, fg=CAT_YELLOW)
         network_label.pack()
 
